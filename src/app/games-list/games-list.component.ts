@@ -10,15 +10,14 @@ import { map } from 'rxjs/operators';
 import { User } from '../user.model';
 
 @Component({
-  selector: 'app-hat-game',
-  templateUrl: './hat-game.component.html',
-  styleUrls: ['./hat-game.component.scss']
+  selector: 'app-games-list',
+  templateUrl: './games-list.component.html',
+  styleUrls: ['./games-list.component.scss']
 })
-export class HatGameComponent implements OnInit {
+export class GamesListComponent implements OnInit {
 
   gamesDataSource: MatTableDataSource<Game>;
-  displayedColumns = ['name', 'owner', 'state', 'goto', 'leave'];
-  currentGameId: string;
+  displayedColumns = ['name', 'owner', 'state', 'join', 'current', 'goto', 'leave'];
   currentUserId: string;
   currentUser: User;
 
@@ -27,9 +26,8 @@ export class HatGameComponent implements OnInit {
 
   ngOnInit(): void {
     this.getGames();
-    this.userService.getCurrentUser().subscribe(user => this.currentGameId = user.currentGameId);
     this.currentUserId = this.userService.getCurrentUserId();
-    this.userService.getCurrentUser().subscribe(user => this.currentUser = user);
+    this.userService.getUser(this.currentUserId).subscribe(user => this.currentUser = user);
   }
 
   addGame(): void {
@@ -48,8 +46,7 @@ export class HatGameComponent implements OnInit {
             roundLength: result.roundLength
           }).then(
             doc => {
-              this.gameService.createTeams(doc.id, result.numberOfTeams);
-              this.userService.joinGame(doc.id);
+              this.userService.joinGame(doc.id, this.currentUser);
               this.goToGame(doc.id);
             }
           );
@@ -62,7 +59,7 @@ export class HatGameComponent implements OnInit {
   }
 
   joinGame(game: Game): void {
-    this.userService.joinGame(game.id);
+    this.userService.joinGame(game.id, this.currentUser);
     this.goToGame(game.id);
   }
 
@@ -79,5 +76,6 @@ export class HatGameComponent implements OnInit {
       .pipe(map(user => user.name))
       .toPromise();
   }
+
 
 }

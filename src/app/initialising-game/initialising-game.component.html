@@ -1,0 +1,6 @@
+<h3 *ngIf="missingPlayers > 0">Waiting for {{missingPlayers}} more player(s)</h3>
+<h3 *ngIf="missingNames > 0">Waiting for {{missingNames}} more name(s) to be submitted</h3>
+<div *ngIf="missingPlayers <= 0 && missingNames <= 0">
+    <h3 *ngIf="isOwner">Ready to start</h3>
+    <h3 *ngIf="!isOwner">Waiting for {{ownerName}} to start game</h3>
+</div>

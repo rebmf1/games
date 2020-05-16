@@ -1,0 +1,3 @@
+<h3>Game over!</h3>
+<h3 *ngIf="winningTeams().length === 1">{{winningTeams()[0]}} wins!</h3>
+<h3 *ngIf="winningTeams().length > 1">Draw between {{winningTeams().join(', ')}}!</h3>

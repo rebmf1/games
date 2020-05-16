@@ -15,13 +15,10 @@ export class LoginGuard implements CanActivate {
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return this.userService.getCurrentUser()
-      .pipe(map(u => {
-        if (!u) {
-          this.router.navigate(['/login']);
-        }
-        return true;
-      }));
+    if (!this.userService.getCurrentUserId()) {
+      this.router.navigate(['/login']);
+    }
+    return true;
   }
 
 }

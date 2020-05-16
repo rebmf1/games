@@ -1,0 +1,15 @@
+<div *ngIf="currentUserId !== game?.currentUserTurnId">
+    <h3 *ngIf="game?.currentUserTurnName">{{game.currentUserTurnName}}'s turn!</h3>
+    <h4 *ngIf="roundInProgress() && currentTeamTurn() && currentTeamTurn() === me?.teamName">Guess the name!</h4>
+    <h4 *ngIf="roundInProgress() && currentTeamTurn() && currentTeamTurn() !== me?.teamName">{{currentTeamTurn()}} is
+        guessing</h4>
+</div>
+<h3 *ngIf="game?.carryOverTime && timeRemaining">Round complete!</h3>
+<h3 *ngIf="game?.carryOverTime">{{game?.carryOverTime}} seconds remaining</h3>
+<h3 *ngIf="roundInProgress()">{{timeRemaining}} seconds left!</h3>
+<div *ngIf="timeRemaining && !game?.carryOverTime && !roundInProgress()">
+    <h3>Time's up!</h3>
+</div>
+<app-my-turn *ngIf="currentUserId === game?.currentUserTurnId" [game]="game" [gameId]="gameId"
+    [currentUserId]="currentUserId" [currentPlayer]="me" [names]="names" [timeRemaining]="timeRemaining"
+    [roundInProgress]="roundInProgress()" [players]="players"></app-my-turn>

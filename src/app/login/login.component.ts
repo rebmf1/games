@@ -29,19 +29,13 @@ export class LoginComponent implements OnInit {
   }
 
   addNewUser(): void {
-    this.userService.addNewUser(this.newUserForm.value.name).then(x => this.router.navigate(['hat-game']));
+    this.userService.addNewUser(this.newUserForm.value.name).then(x => this.router.navigate(['games']));
 
   }
 
   login(user: User): void {
     this.userService.login(user.id);
-    this.userService.getCurrentUser().subscribe(user => {
-      if (user.currentGameId) {
-        this.router.navigate(['hat-game', user.currentGameId]);
-      } else {
-        this.router.navigate(['hat-game']);
-      }
-    });
+    this.router.navigate(['games']);
   }
 
 }

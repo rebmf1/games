@@ -13,4 +13,5 @@ export class Game {
     currentUserTurnName?: string;
     roundEnd?: number;
     roundLength: number;
+    carryOverTime?: number;
 }

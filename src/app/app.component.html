@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
   <span class="larger">Hat Game</span>
-  <span [routerLink]="'hat-game'" class="smaller">All Games</span>
-  <span [routerLink]="['hat-game/',currentUser?.currentGameId]" class="smaller">My Current Game</span>
+  <span [routerLink]="'/games'" class="smaller">All Games</span>
+  <span *ngIf="currentUser?.currentGameId" [routerLink]="['/games', currentUser?.currentGameId]" class="smaller">My Current Game</span>
   <span class="spacer"></span>
   <span class="smaller">{{currentUser?.name}}</span>
 </mat-toolbar>

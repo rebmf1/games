@@ -1,0 +1,21 @@
+<h3>Players</h3>
+<h4 *ngIf="missingPlayers> 0">{{missingPlayers}} more players needed</h4>
+<table *ngIf="playersDataSource" mat-table [dataSource]="playersDataSource" class="mat-elevation-z8">
+    <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>Player</th>
+        <td mat-cell *matCellDef="let user"> {{user.name}} </td>
+    </ng-container>
+    <ng-container matColumnDef="namesSubmitted">
+        <th mat-header-cell *matHeaderCellDef>Names Submitted</th>
+        <td mat-cell *matCellDef="let user"> {{user.namesSubmitted}} </td>
+    </ng-container>
+    <ng-container matColumnDef="ready">
+        <th mat-header-cell *matHeaderCellDef>Ready</th>
+        <td mat-cell *matCellDef="let user"><span *ngIf="user.namesSubmitted === namesPerPlayer">
+            <i class="material-icons">done</i>
+        </span>
+    </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

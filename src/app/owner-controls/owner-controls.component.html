@@ -1,0 +1,8 @@
+<div class="row">
+    <div class="col-sm">
+        <button mat-raised-button *ngIf="canCancel()" color="warn" (click)="cancelGame()">Cancel Game</button>
+    </div>
+    <div class="col-sm">
+        <button *ngIf="canStart" mat-raised-button color="primary" (click)="startGame()">Start Game</button>
+    </div>
+</div>

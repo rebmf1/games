@@ -17,9 +17,11 @@ export class AppComponent implements OnInit {
 
   }
   ngOnInit(): void {
-    this.userService.getCurrentUser().subscribe(user => this.currentUser = user);
+    this.userService.subscribeToCurrentUser().subscribe(user => this.updateCurrentUser(user));
   }
 
-
+  private updateCurrentUser(user: User) {
+    this.currentUser = user;
+  }
 
 }

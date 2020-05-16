@@ -17,17 +17,31 @@
                 <th mat-header-cell *matHeaderCellDef>State</th>
                 <td mat-cell *matCellDef="let game"> {{game.state}} </td>
             </ng-container>
+            <ng-container matColumnDef="join">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let game">
+                    <button mat-raised-button *ngIf="game.state === 'INITIALISING' && !currentUser?.currentGameId"
+                        color="primary" (click)="joinGame(game)">Join Game</button>
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="current">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let game">
+                    <span *ngIf="game.id === currentUser?.currentGameId">CURRENT GAME</span>
+                </td>
+            </ng-container>
             <ng-container matColumnDef="goto">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let game">
-                    <button mat-raised-button *ngIf="game.state === 'INITIALISING' && !currentGameId" color="primary" (click)="joinGame(game)">Join Game</button>
-                    <button mat-raised-button *ngIf="game.id == currentGameId" color="primary" (click)="goToGame(game.id)">Go To Game</button>
+                    <button mat-raised-button color="primary" (click)="goToGame(game.id)">Go To Game</button>
                 </td>
             </ng-container>
             <ng-container matColumnDef="leave">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let game">
-                    <button mat-raised-button *ngIf="game.id === currentGameId && currentUserId !== game.ownerId" color="warn" (click)="leaveGame()">Leave Game</button>
+                    <button mat-raised-button
+                        *ngIf="game.id === currentUser?.currentGameId && currentUserId !== game.ownerId" color="warn"
+                        (click)="leaveGame()">Leave Game</button>
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -35,7 +49,8 @@
         </table>
         <br />
         <br />
-        <button *ngIf="!currentGameId" mat-raised-button color="primary" (click)=addGame()>New Game</button>
+        <button *ngIf="!currentUser?.currentGameId" mat-raised-button color="primary" (click)=addGame()>New
+            Game</button>
     </div>
-    
+
 </div>

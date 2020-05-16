@@ -1,111 +1,53 @@
 <div class="content">
-    <h2>Game {{game?.name}}: {{game?.state}}</h2>
-    <h3>{{game?.numberOfTeams}} teams</h3>
-    <h3><b>Owner:</b> {{game?.ownerName}}</h3>
-    <div *ngIf="canLeave()">
-        <button mat-raised-button color="warn" (click)="leaveGame()">Leave Game</button>
-        <br />
-        <br />
-    </div>
-    <div *ngIf="canCancel()">
-        <button mat-raised-button color="warn" (click)="cancelGame()">Cancel Game</button>
-        <br />
-        <br />
-    </div>
-    <div *ngIf="canStart()">
-        <button mat-raised-button color="primary" (click)="startGame()">Start Game</button>
-        <br />
-        <br />
-    </div>
-    <h3 *ngIf="missingPlayers() > 0">
-        {{missingPlayers()}} more players needed</h3>
-    <h3 *ngIf="readyToStart() && !canStart()">Waiting for {{game?.ownerName}} to start the game...</h3>
-    <table *ngIf="playersDataSource" mat-table [dataSource]="playersDataSource" class="mat-elevation-z8">
-        <ng-container matColumnDef="user">
-            <th mat-header-cell *matHeaderCellDef>Players</th>
-            <td mat-cell *matCellDef="let user"> {{user.name}} </td>
-        </ng-container>
-        <ng-container matColumnDef="namesSubmitted">
-            <th mat-header-cell *matHeaderCellDef>Names Submitted</th>
-            <td mat-cell *matCellDef="let user"> {{user.namesSubmitted}} </td>
-        </ng-container>
-        <ng-container matColumnDef="score">
-            <th mat-header-cell *matHeaderCellDef>Score</th>
-            <td mat-cell *matCellDef="let user"> {{user.score}} </td>
-        </ng-container>
-        <ng-container matColumnDef="team">
-            <th mat-header-cell *matHeaderCellDef>Players</th>
-            <td mat-cell *matCellDef="let user">
-                <span *ngIf="user.teamId">{{user.teamName}}</span>
-                <span *ngIf="!user.teamId">TBC</span>
-            </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="playersDisplayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: playersDisplayedColumns;"></tr>
-    </table>
-    <br />
-    <h3>{{names?.length}} of {{totalNamesNeeded()}} names submitted overall</h3>
-    <div *ngIf="currentUser?.namesSubmitted < game?.namesPerPerson  && game?.state === 'INITIALISING'">
-        <h3>You need to submit {{game?.namesPerPerson - currentUser?.namesSubmitted}} more names</h3>
-        <form [formGroup]="addName" (ngSubmit)="saveName()">
-            <mat-form-field>
-                <input matInput placeholder="Name" formControlName="name">
-            </mat-form-field>
-            <br />
-            <button mat-raised-button color="primary" type="submit">Add Name</button>
-        </form>
-    </div>
-    <div *ngIf="game?.state === 'IN PROGRESS' || game?.state === 'COMPLETED'">
-        <table *ngIf="teamsDataSource" mat-table [dataSource]="teamsDataSource" class="mat-elevation-z8">
-            <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef>Team</th>
-                <td mat-cell *matCellDef="let team"> {{team.name}} </td>
-            </ng-container>
-            <ng-container matColumnDef="score">
-                <th mat-header-cell *matHeaderCellDef>Score</th>
-                <td mat-cell *matCellDef="let team"> {{team.score}} </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="teamsDisplayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: teamsDisplayedColumns;"></tr>
-        </table>
-    </div>
-    <div *ngIf="game?.state === 'COMPLETED'">
-        <h3>Game over!</h3>
-        <h3>{{winningTeam().name}} wins!</h3>
-    </div>
-    <div *ngIf="game?.state === 'IN PROGRESS'">
-        <h3>Round {{game?.currentRound}}</h3>
-        <div *ngIf="game?.currentUserTurnId === currentUserId">
-            <h2>Your turn!</h2>
-            <button mat-raised-button color="primary" (click)="startRound()"
-                *ngIf="!roundInProgress() && !timeRemaining">
-                Start Round</button>
-            <mat-card *ngIf="roundInProgress()">
-                <mat-card-header *ngIf="game?.currentRound === 1">
-                    <mat-card-title>Describe this name:</mat-card-title>
-                </mat-card-header>
-                <mat-card-header *ngIf="game?.currentRound === 2">
-                    <mat-card-title>Describe this name in <b>one</b> word:</mat-card-title>
-                </mat-card-header>
-                <mat-card-header *ngIf="game?.currentRound === 3">
-                    <mat-card-title>Act out this name:</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                    <p>{{currentName?.value}}</p>
-                </mat-card-content>
-            </mat-card>
-            <button mat-raised-button color="primary" (click)="nextName()" *ngIf="roundInProgress()">
-                Next Name</button>
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm">
+                <app-owner-controls *ngIf="game?.ownerId === currentUserId" [gameId]="gameId" [canStart]="canStart()"
+                    [gameState]="game?.state" [players]="players" [numberOfTeams]="game?.numberOfTeams">
+                </app-owner-controls>
+                <app-player-controls *ngIf="game?.ownerId !== currentUserId" [gameState]="game?.state">
+                </app-player-controls>
+            </div>
+            <div class="col-sm">
+                <app-header *ngIf="game?.state === 'IN PROGRESS'" [currentRound]="game?.currentRound"
+                    [teamName]="currentPlayer?.teamName">
+                </app-header>
+            </div>
+            <div class="col-sm"></div>
         </div>
-        <h2 *ngIf="game?.currentUserTurnId !== currentUserId">{{game?.currentUserTurnName}}'s turn!</h2>
-        <h3 *ngIf="roundInProgress()">{{timeRemaining}} seconds left!</h3>
-        <div *ngIf="timeRemaining && !carryOverTime && !roundInProgress()">
-            <h3>Time's up!</h3>
-            <button mat-raised-button color="primary" (click)="nextPlayer()">Next Player</button>
-        </div>
-        <div *ngIf="carryOverTime && timeRemaining">
-            <h3>Round complete! {{carryOverTime}} seconds left.</h3>
-            <button mat-raised-button color="primary" (click)="nextRound()">Next Round</button>
+        <br />
+        <div class="row">
+            <div class="col-sm">
+                <app-game-info [game]="game"></app-game-info>
+            </div>
+            <div class="col-sm my-auto">
+                <div *ngIf="game?.state === 'INITIALISING'">
+                    <div *ngIf="currentPlayer?.namesSubmitted < game?.namesPerPerson">
+                        <app-add-name [gameId]="gameId" [currentUserId]="currentUserId"
+                            [namesSubmitted]="currentPlayer?.namesSubmitted"
+                            [missingNames]="game?.namesPerPerson - currentPlayer?.namesSubmitted"></app-add-name>
+                    </div>
+                    <div *ngIf="currentPlayer?.namesSubmitted >= game?.namesPerPerson">
+                        <app-initialising-game [missingPlayers]="missingPlayers()" [missingNames]="missingNames()"
+                            [ownerName]="game?.ownerName" [isOwner]="game?.ownerId === currentUserId">
+                        </app-initialising-game>
+                    </div>
+                </div>
+                <div *ngIf="game?.state === 'IN PROGRESS'">
+                    <app-in-progress [game]="game" [me]="currentPlayer" [gameId]="gameId"
+                        [currentUserId]="currentUserId" [names]="names" [players]="players">
+                    </app-in-progress>
+                </div>
+                <div *ngIf="game?.state === 'COMPLETED'">
+                    <app-complete [players]="players"></app-complete>
+                </div>
+            </div>
+            <div class="col-sm">
+                <app-players *ngIf="game?.state === 'INITIALISING'" [playersDataSource]="playersDataSource"
+                    [namesPerPlayer]="game?.namesPerPerson" [missingPlayers]="missingPlayers()">
+                </app-players>
+                <app-teams *ngIf="game && game.state !== 'INITIALISING'" [players]="players"></app-teams>
+            </div>
         </div>
     </div>
 </div>

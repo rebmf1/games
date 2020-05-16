@@ -4,9 +4,9 @@ import { Game } from './game.model';
 import { Observable } from 'rxjs';
 import { User } from './user.model';
 import { Name } from './name.model';
-import { Team } from './team.model';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
+import { Player } from './player.model';
 
 @Injectable({
   providedIn: 'root'
@@ -29,32 +29,8 @@ export class GameService {
     return this.firestore.collection('games').add(game);
   }
 
-  createTeams(gameId: string, numberOfTeams: number) {
-    for (let i = 1; i <= numberOfTeams; i++) {
-      this.firestore.collection('games').doc(gameId).collection('teams').add({
-        name: `Team ${i}`,
-        size: 0,
-        sequence: i,
-        score: 0
-      });
-    }
-  }
-
-  teams(gameId: string): Observable<Team[]> {
-    return this.firestore.collection('games').doc(gameId).collection<Team>('teams').valueChanges();
-  }
-
-  updateGame(game: Game) {
-    delete game.id;
-    this.firestore.doc('games/' + game.id).update(game);
-  }
-
-  deleteGame(gameId: string) {
-    this.firestore.doc('games/' + gameId).delete();
-  }
-
-  getPlayers(gameId: string): Observable<User[]> {
-    return this.firestore.collection<User>('users', ref => ref.where('currentGameId', '==', gameId)).valueChanges({ idField: 'id' });
+  getPlayers(gameId: string): Observable<Player[]> {
+    return this.firestore.collection('games').doc(gameId).collection<Player>('players').valueChanges({ idField: 'id' });
   }
 
   addName(gameId: string, name: Name): void {
@@ -69,27 +45,45 @@ export class GameService {
     return this.firestore.collection('games').doc(gameId).collection<Name>('namesThisRound').valueChanges({ idField: 'id' });
   }
 
-  startGame(gameId: string) {
+  startGame(gameId: string, players: Player[], numberOfTeams: number) {
     this.shuffleNames(gameId);
     this.updateGameState(gameId, 'IN PROGRESS');
-    this.firestore.collection('users', ref => ref.where('currentGameId', '==', gameId)
-      .where('sequence', '==', 1))
-      .get()
-      .subscribe(user => this.firestore.collection('games').doc(gameId).update({
-        currentUserTurnId: user.docs[0].id,
-        currentUserTurnName: user.docs[0].data().name
-      }));
+    let teams: Player[][] = this.split(players, numberOfTeams);
+    let sequence = 1;
+    for (let i = 0; i < numberOfTeams; ++i) {
+      let teamNumber = 1;
+      for (let j = 0; j < teams[i].length; j++) {
+        this.firestore.collection('games').doc(gameId).collection('players').doc(teams[i][j].id)
+          .update({
+            sequence: sequence,
+            teamName: `Team ${teamNumber}`
+          });
+        if (sequence === 1) {
+          this.firestore.collection('games').doc(gameId)
+            .update({
+              currentUserTurnId: teams[i][j].id,
+              currentUserTurnName: teams[i][j].name
+            });
+        }
+        sequence++;
+        teamNumber++;
+      }
+    }
   }
 
-  nextPlayer(gameId: string, currentSequence: number) {
-    this.firestore.collection('users', ref => ref.where('currentGameId', '==', gameId)
-      .where('sequence', '==', currentSequence + 1))
+  nextPlayer(gameId: string, nextSequence: number) {
+    this.firestore.collection('games').doc(gameId).collection('players', ref => ref.where('sequence', '==', nextSequence))
       .get()
       .subscribe(user => this.firestore.collection('games').doc(gameId).update({
         currentUserTurnId: user.docs[0].id,
         currentUserTurnName: user.docs[0].data().name,
-        roundEnd: null
+        roundEnd: null,
+        carryOverTime: null
       }));
+  }
+
+  setCarryOverTime(gameId: string, carryOverTime: number) {
+    this.firestore.collection('games').doc(gameId).update({ carryOverTime: carryOverTime });
   }
 
   shuffleNames(gameId: string) {
@@ -103,37 +97,38 @@ export class GameService {
   }
 
   nextRound(gameId: string, currentRound: number) {
-    if (currentRound === 3) {
-      this.updateGameState(gameId, 'COMPLETED');
-    } else {
-      this.firestore.collection('games').doc(gameId).update({ currentRound: currentRound + 1, roundEnd: null });
-      this.firestore.collection('games').doc(gameId).collection('namesThisRound').get()
-        .subscribe(names => names.docs.forEach(n => this.firestore.collection('games').doc(gameId).collection('namesThisRound').doc(n.id).delete()));
-      this.shuffleNames(gameId);
-    }
+    this.firestore.collection('games').doc(gameId).update({ currentRound: currentRound + 1, roundEnd: null });
+    this.firestore.collection('games').doc(gameId).collection('namesThisRound').get()
+      .subscribe(names => names.docs.forEach(n => this.firestore.collection('games').doc(gameId).collection('namesThisRound').doc(n.id).delete()));
+    this.shuffleNames(gameId);
   }
 
   startRound(gameId: string, roundLength: number) {
-    this.firestore.collection('games').doc(gameId).update({ roundEnd: Date.now() + (roundLength * 1000) })
+    this.firestore.collection('games').doc(gameId).update({ roundEnd: Date.now() + (roundLength * 1000), carryOverTime: null })
   }
 
   cancelGame(gameId: string) {
     this.updateGameState(gameId, 'CANCELLED');
-    this.firestore.collection<User>('users', ref => ref.where('currentGameId', '==', gameId)).get()
-      .subscribe(users => users.docs.forEach(user =>
-        this.firestore.collection('users').doc(user.id).update({ currentGameId: null })));
-  }
-
-  getTeam(gameId: string, teamId: string): Observable<Team> {
-    return this.firestore.collection('games').doc(gameId).collection('teams').doc<Team>(teamId).valueChanges();
   }
 
   markNameGuessed(gameId: string, name: Name) {
     return this.firestore.collection('games').doc(gameId).collection('namesThisRound').doc(name.id).set({ value: name.value });
   }
 
-  private updateGameState(gameId: string, state: string) {
+  updateGameState(gameId: string, state: string) {
     this.firestore.collection('games').doc(gameId).update({ state: state });
+  }
+
+  updateNamesSubmittedCount(gameId: string, playerId: string, newCount: number) {
+    this.firestore.collection('games').doc(gameId).collection('players').doc(playerId).update({ namesSubmitted: newCount });
+  }
+
+  getPlayer(gameId: string, playerId: string): Observable<Player> {
+    return this.firestore.collection('games').doc(gameId).collection('players').doc<Player>(playerId).valueChanges();
+  }
+
+  updateScore(gameId: string, playerId: string, newPlayerScore: number) {
+    this.firestore.collection('games').doc(gameId).collection('players').doc(playerId).update({ score: newPlayerScore });
   }
 
   private shuffle(array: any[]): any[] {
@@ -154,4 +149,16 @@ export class GameService {
 
     return array;
   }
+
+  private split(array: any[], subArraySize: number): any[][] {
+    let result: any[][] = [];
+    for (let i = 0; i < subArraySize; ++i) {
+      result[i] = [];
+    }
+    for (let i = 0; i < array.length; ++i) {
+      result[i % subArraySize].push(array[i]);
+    }
+    return result;
+  }
+
 }

@@ -1,0 +1,29 @@
+<div class="row align-items-center">
+    <div class="col-sm my-auto">
+        <h2>Your turn!</h2>
+        <button mat-raised-button color="primary" (click)="startRound()" *ngIf="!roundInProgress && !timeRemaining">
+            Start Round</button>
+        <mat-card *ngIf="roundInProgress">
+            <mat-card-header *ngIf="game?.currentRound === 1">
+                <mat-card-title>Describe this name:</mat-card-title>
+            </mat-card-header>
+            <mat-card-header *ngIf="game?.currentRound === 2">
+                <mat-card-title>Describe this name in <b>one</b> word:</mat-card-title>
+            </mat-card-header>
+            <mat-card-header *ngIf="game?.currentRound === 3">
+                <mat-card-title>Act out this name:</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p>{{currentName?.value}}</p>
+            </mat-card-content>
+        </mat-card>
+        <br />
+        <button mat-raised-button color="primary" (click)="nextName()" *ngIf="roundInProgress">Next Name</button>
+        <div *ngIf="timeRemaining && !game?.carryOverTime && !roundInProgress">
+            <button mat-raised-button color="primary" (click)="nextPlayer()">Next Player</button>
+        </div>
+        <div *ngIf="game?.carryOverTime && timeRemaining">
+            <button mat-raised-button color="primary" (click)="nextRound()">Next Round</button>
+        </div>
+    </div>
+</div>
