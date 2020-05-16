@@ -61,11 +61,8 @@ export class MyTurnComponent implements OnInit {
         if (this.game.currentRound < 3) {
           this.gameService.setCarryOverTime(this.gameId, this.timeRemaining);
         } else {
-          console.log('complete');
           this.gameService.updateGameState(this.gameId, 'COMPLETED');
-          console.log('marked game complete');
           this.userService.removeAllPlayers(this.players);
-          console.log('removed players');
         }
       }
     }
