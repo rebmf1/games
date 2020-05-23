@@ -14,7 +14,6 @@ import { Player } from './player.model';
 export class GameService {
 
   constructor(private firestore: AngularFirestore) {
-
   }
 
   getGames(): Observable<Game[]> {
@@ -48,11 +47,11 @@ export class GameService {
   startGame(gameId: string, players: Player[], numberOfTeams: number) {
     this.shuffleNames(gameId);
     this.updateGameState(gameId, 'IN PROGRESS');
-    let teams: Player[][] = this.split(players, numberOfTeams);
+    let teams: Player[][] = this.split(this.shuffle(players), numberOfTeams);
     let sequence = 1;
-    for (let i = 0; i < numberOfTeams; ++i) {
+    for (let i = 0; i < teams.length; ++i) {
       let teamNumber = 1;
-      for (let j = 0; j < teams[i].length; j++) {
+      for (let j = 0; j < teams[i].length; ++j) {
         this.firestore.collection('games').doc(gameId).collection('players').doc(teams[i][j].id)
           .update({
             sequence: sequence,
@@ -153,11 +152,8 @@ export class GameService {
 
   private split(array: any[], subArraySize: number): any[][] {
     let result: any[][] = [];
-    for (let i = 0; i < subArraySize; ++i) {
-      result[i] = [];
-    }
-    for (let i = 0; i < array.length; ++i) {
-      result[i % subArraySize].push(array[i]);
+    for (let i: number = 0; i < array.length; i = i + subArraySize) {
+      result.push(array.slice(i, i + subArraySize));
     }
     return result;
   }

@@ -37,6 +37,8 @@ export class MyTurnComponent implements OnInit {
   roundInProgress: boolean;
 
   currentName: Name;
+  passedName: Name;
+  canPass: boolean;
   private namesThisRound: Name[];
 
   constructor(private gameService: GameService, private userService: UserService) { }
@@ -53,10 +55,12 @@ export class MyTurnComponent implements OnInit {
 
   private getNextName(): void {
     if (this.names && this.namesThisRound) {
-      let namesRemaining = this.names.filter(name => !this.namesThisRound.map(n => n.id).includes(name.id));
+      let namesRemaining = this.names.filter(name => !this.namesThisRound.map(n => n.id).includes(name.id))
+        .filter(name => !this.passedName || this.passedName.id !== name.id);
+      this.canPass = (namesRemaining.length > 1) && !this.passedName;
       if (namesRemaining.length > 0) {
         this.currentName = namesRemaining.reduce((prev, current) => prev.sequence < current.sequence ? prev : current);
-      } else {
+      } else if (!this.passedName) {
         this.currentName = null;
         if (this.game.currentRound < 3) {
           this.gameService.setCarryOverTime(this.gameId, this.timeRemaining);
@@ -64,6 +68,10 @@ export class MyTurnComponent implements OnInit {
           this.gameService.updateGameState(this.gameId, 'COMPLETED');
           this.userService.removeAllPlayers(this.players);
         }
+      } else {
+        this.currentName = this.passedName;
+        this.passedName = null;
+        this.canPass = false;
       }
     }
   }
@@ -83,5 +91,18 @@ export class MyTurnComponent implements OnInit {
       (this.currentPlayer.sequence < this.players.length) ? (this.currentPlayer.sequence + 1) : 1);
   }
 
+  passName() {
+    this.passedName = this.currentName;
+    this.canPass = false;
+    this.getNextName();
+  }
+
+  gotPassedName() {
+    this.gameService.markNameGuessed(this.gameId, this.passedName);
+    this.passedName = null;
+  }
+
+  //TODO check end of round
+  //TODO check end of round time
 
 }

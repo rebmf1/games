@@ -32,34 +32,12 @@ export class TeamsComponent implements OnInit {
     return this.split(this.players.filter(p => p.teamName === team), 3);
   }
 
-  private split(array: any[], count: number): any[][] {
-
-    if (count < 2)
-      return [array];
-
-    let len = array.length,
-      out = [],
-      i = 0,
-      size;
-
-    if (len % count === 0) {
-      size = Math.floor(len / count);
-      while (i < len) {
-        out.push(array.slice(i, i += size));
-      }
-    } else {
-
-      count--;
-      size = Math.floor(len / count);
-      if (len % size === 0)
-        size--;
-      while (i < size * count) {
-        out.push(array.slice(i, i += size));
-      }
-      out.push(array.slice(size * count));
-
+  private split(array: any[], subArraySize: number): any[][] {
+    let result: any[][] = [];
+    for (let i = 0; i < array.length; i += subArraySize) {
+      result.push(array.slice(i, i + subArraySize));
     }
-    return out;
+    return result;
   }
 
 }
