@@ -17,7 +17,7 @@
         </div>
         <br />
         <div class="row">
-            <div class="col-sm">
+            <div class="col-sm" *ngIf="!isMobile()">
                 <app-game-info [game]="game"></app-game-info>
             </div>
             <div class="col-sm my-auto">

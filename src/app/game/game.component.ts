@@ -12,6 +12,7 @@ import { map } from 'rxjs/operators';
 import { ThrowStmt } from '@angular/compiler';
 import { Subscription, interval } from 'rxjs';
 import { Player } from '../player.model';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   selector: 'app-game',
@@ -33,7 +34,8 @@ export class GameComponent implements OnInit {
   currentName: Name;
   currentPlayer: Player;
 
-  constructor(private gameService: GameService, private route: ActivatedRoute, private userService: UserService) { }
+  constructor(private gameService: GameService, private route: ActivatedRoute, private userService: UserService,
+    private deviceService: DeviceDetectorService) { }
 
   ngOnInit(): void {
     this.currentUserId = this.userService.getCurrentUserId();
@@ -77,6 +79,10 @@ export class GameComponent implements OnInit {
   totalNamesNeeded(): number {
     return (!this.game || !this.playersDataSource) ? 0 :
       this.playersDataSource.data.length * this.game.namesPerPerson;
+  }
+
+  isMobile(): boolean {
+    return this.deviceService.isMobile();
   }
 
 }

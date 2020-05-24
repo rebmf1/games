@@ -31,6 +31,7 @@ import { InProgressComponent } from './in-progress/in-progress.component';
 import { MyTurnComponent } from './my-turn/my-turn.component';
 import { CompleteComponent } from './complete/complete.component';
 import { HeaderComponent } from './header/header.component';
+import { DeviceDetectorModule } from 'ngx-device-detector';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { HeaderComponent } from './header/header.component';
     MatFormFieldModule,
     MatTableModule,
     MatInputModule,
-    MatCardModule
+    MatCardModule,
+    DeviceDetectorModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

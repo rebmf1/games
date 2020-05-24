@@ -2,7 +2,7 @@
     <div class="col-sm my-auto">
         <h2>Your turn!</h2>
         <button mat-raised-button color="primary" (click)="startRound()" *ngIf="!roundInProgress && !timeRemaining">
-            Start Round</button>
+            Start Timer</button>
         <mat-card *ngIf="roundInProgress">
             <mat-card-header *ngIf="game?.currentRound === 1">
                 <mat-card-title>Describe this name:</mat-card-title>
@@ -15,7 +15,16 @@
             </mat-card-header>
             <mat-card-content>
                 <p>{{currentName?.value}}</p>
-                <button mat-raised-button color="primary" (click)="passName()" *ngIf="canPass">Pass</button>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm">
+                            <button mat-raised-button color="primary" (click)="guessName()">Guessed</button>
+                        </div>
+                        <div class="col-sm">
+                            <button mat-raised-button color="primary" (click)="passName()" *ngIf="canPass">Pass</button>
+                        </div>
+                    </div>
+                </div>
             </mat-card-content>
         </mat-card>
         <mat-card *ngIf="roundInProgress && passedName">
@@ -24,11 +33,10 @@
             </mat-card-header>
             <mat-card-content>
                 <p>{{passedName?.value}}</p>
-                <button mat-raised-button color="primary" (click)="gotPassedName()">Guessed</button>
+                <button mat-raised-button color="primary" (click)="guessPassedName()">Guessed</button>
             </mat-card-content>
         </mat-card>
         <br />
-        <button mat-raised-button color="primary" (click)="nextName()" *ngIf="roundInProgress">Next Name</button>
         <div *ngIf="timeRemaining && !game?.carryOverTime && !roundInProgress">
             <button mat-raised-button color="primary" (click)="nextPlayer()">Next Player</button>
         </div>

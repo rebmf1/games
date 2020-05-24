@@ -70,6 +70,13 @@ export class GameService {
     }
   }
 
+  updatePlayerSequence(gameId: string, playerId: string, newSequence: number) {
+    this.firestore.collection('games').doc(gameId).collection('players').doc(playerId)
+          .update({
+            sequence: newSequence
+          });
+  }
+
   nextPlayer(gameId: string, nextSequence: number) {
     this.shuffleNames(gameId);
     this.firestore.collection('games').doc(gameId).collection('players', ref => ref.where('sequence', '==', nextSequence))

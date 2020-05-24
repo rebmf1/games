@@ -47,7 +47,7 @@ export class MyTurnComponent implements OnInit {
     this.gameService.namesThisRound(this.gameId).subscribe(n => this.namesThisRound = n);
   }
 
-  nextName() {
+  guessName() {
     this.gameService.updateScore(this.gameId, this.currentUserId, this.currentPlayer.score + 1);
     this.gameService.markNameGuessed(this.gameId, this.currentName).then(x =>
       this.getNextName());
@@ -87,8 +87,8 @@ export class MyTurnComponent implements OnInit {
   }
 
   nextPlayer() {
-    this.gameService.nextPlayer(this.gameId,
-      (this.currentPlayer.sequence < this.players.length) ? (this.currentPlayer.sequence + 1) : 1);
+    this.gameService.nextPlayer(this.gameId, this.currentPlayer.sequence + 1);
+    this.gameService.updatePlayerSequence(this.gameId, this.currentUserId, this.currentPlayer.sequence + this.players.length);
   }
 
   passName() {
@@ -97,12 +97,10 @@ export class MyTurnComponent implements OnInit {
     this.getNextName();
   }
 
-  gotPassedName() {
+  guessPassedName() {
+    this.gameService.updateScore(this.gameId, this.currentUserId, this.currentPlayer.score + 1);
     this.gameService.markNameGuessed(this.gameId, this.passedName);
     this.passedName = null;
   }
-
-  //TODO check end of round
-  //TODO check end of round time
 
 }
