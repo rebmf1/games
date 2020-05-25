@@ -88,7 +88,8 @@ export class MyTurnComponent implements OnInit {
 
   nextPlayer() {
     this.gameService.nextPlayer(this.gameId, this.currentPlayer.sequence + 1);
-    this.gameService.updatePlayerSequence(this.gameId, this.currentUserId, this.currentPlayer.sequence + this.players.length);
+    this.gameService.updatePlayerSequence(this.gameId, this.currentUserId,
+      this.currentPlayer.sequence + (this.game.numberOfTeams * this.players.filter(p => p.teamName === this.currentPlayer.teamName).length));
   }
 
   passName() {
